@@ -3,12 +3,23 @@ import akka.actor.{ActorSystem, ActorLogging, Actor, Props,ActorRef}
 
 import chat.messages._
 
-class ChatClient extends Actor with ActorLogging {
+class ChatClient(var server:ActorRef) extends Actor with ActorLogging {
     def receive = {
         case MessageReceived(from,msg) =>
-            log.info("Receiving from:"+from+" : "+msg);
-    }
-        
-    def send(to:String, msg:String)={
-    }
+            println(msg);
+        case Register(username,_server)=>
+            server=_server;
+            server ! Registration(username);
+        case SendMessage(to,msg) =>
+            server ! SendMessage(to,msg);
+    }       
+}
+
+object Client extends App {
+//  val system = ActorSystem("chat-client")
+
+//  val client = system.actorOf(Props(new ChatClient(null)), "client")
+
+    val msg=readLine();
+    println(msg);
 }

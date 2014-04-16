@@ -6,7 +6,7 @@ import chat.messages._
 class ChatServer extends Actor with ActorLogging {
     var users=collection.mutable.Map[String,ActorRef]();
     def receive = {
-        case Register(username) => {
+        case Registration(username) => {
             log.info("registered: "+username);
             register(username,sender);
         }
@@ -23,4 +23,12 @@ class ChatServer extends Actor with ActorLogging {
             users(to) ! MessageReceived("anon",msg);
         }    
     }
+}
+
+object Main extends App {
+  val system = ActorSystem("chat")
+
+  val server = system.actorOf(Props(new ChatServer), "server")
+
+  system.awaitTermination()
 }
