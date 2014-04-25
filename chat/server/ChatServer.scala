@@ -25,7 +25,7 @@ class ChatServer extends Actor with ActorLogging {
     }
 }
 
-object Main extends App {
+object Server extends App {
   val system = ActorSystem("chat")
 
   val server = system.actorOf(Props(new ChatServer), "server")
