@@ -10,8 +10,14 @@ class DFA[StateType]
 {
     private def accepts(state:StateType,input:List[Char]):Boolean ={
         input match {
-            case Nil => F contains state
-            case head::tail => accepts(delta(state,head),tail)
+            case Nil => {
+//                println("Empty list -- "+state.toString);
+                F contains state
+            }
+            case head::tail => {
+//                println("Inp="+head+"\tState ="+state.toString);
+                accepts(delta(state,head),tail)
+            }
         }
     }
     def accepts(input:List[Char]):Boolean =accepts(q0,input)
@@ -65,10 +71,13 @@ object Main {
             else pwr(t.tail, ps ++ (ps map (_ + t.head)))
 
         pwr(t, Set(Set.empty[A])) //Powerset of ∅ is {∅}
-    }   
+    }
+    
     def NFAtoDFA[StateType](n:NFA[StateType]):DFA[Set[StateType]]={
         def delta(states:Set[StateType],inp:Char):Set[StateType]=states flatMap ((state:StateType)=>n.delta(state,inp));
-        new DFA(power(n.Q),power(n.F)-Set.empty[StateType],Set(n.q0),delta,n.Sigma);
+        val Q=power(n.Q);
+        val F=for(s <- Q if !(s intersect n.F).isEmpty) yield s;
+        new DFA(Q,F,Set(n.q0),delta,n.Sigma);
     }
 
     def main(args:Array[String]) {
