@@ -8,19 +8,23 @@ class DFA[StateType]
     val Sigma:Set[Char]
 )
 {
-    private def accepts(state:StateType,input:List[Char]):Boolean ={
+    def deltaHat(state:StateType,input:List[Char]):StateType= {
         input match {
-            case Nil => {
-//                println("Empty list -- "+state.toString);
-                F contains state
-            }
-            case head::tail => {
-//                println("Inp="+head+"\tState ="+state.toString);
-                accepts(delta(state,head),tail)
-            }
+            case Nil => state;
+            case head::tail => deltaHat(delta(state,head),tail)
         }
     }
-    def accepts(input:List[Char]):Boolean =accepts(q0,input)
+
+    def accepts(input:List[Char]):Boolean =F contains deltaHat(q0,input) 
+    
+    // this is another way of defining acceptance; not used
+    private def accepts(state:StateType,input:List[Char]):Boolean ={
+        input match {
+            case Nil => F contains state
+            case head::tail => accepts(delta(state,head),tail)
+        }
+    }
+    
 }
 
 // represents a non-deterministic finite automata
@@ -29,17 +33,26 @@ class NFA[StateType]
     val Q:Set[StateType],
     val F:Set[StateType],
     val q0:StateType, 
-    val delta: (StateType,Char)=>Set[StateType],
+    val delta: (StateType,Char)=>Set[StateType], // the function now returns a set of states
     val Sigma:Set[Char]
 )
 {
+    def deltaHat(state:StateType,input:List[Char]):Set[StateType]= {
+        input match {
+            case Nil => Set(state);
+            case head::tail => delta(state,head) flatMap ((state)=>deltaHat(state,tail))
+        }
+    }
+
+    def accepts(input:List[Char]):Boolean =(F intersect deltaHat(q0,input)).isEmpty == false
+
+    // another way to define acceptance, not used
     private def accepts(states:Set[StateType],input:List[Char]):Boolean ={
         input match {
             case Nil => !(F intersect states).isEmpty
             case head::tail => accepts(states flatMap ((state:StateType)=>delta(state,head)),tail)
         }
     }
-    def accepts(input:List[Char]):Boolean =accepts(Set(q0),input)    
 
 }
 
@@ -64,6 +77,7 @@ object Main {
         }
     }
 
+    // this is the standard recursive def, with an accumulator, stolen from stackoverflow
     def power[A](t: Set[A]): Set[Set[A]] = {
         @annotation.tailrec 
         def pwr(t: Set[A], ps: Set[Set[A]]): Set[Set[A]] =
