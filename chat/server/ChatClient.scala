@@ -16,10 +16,9 @@ class ChatClient(var server:ActorRef) extends Actor with ActorLogging {
 }
 
 object Client extends App {
-//  val system = ActorSystem("chat-client")
-
-//  val client = system.actorOf(Props(new ChatClient(null)), "client")
-
+    val system = ActorSystem("chat-client")
+    val client = system.actorOf(Props(new ChatClient(null)), "client")
+    val server=client.actorOf()
     val msg=readLine();
     println(msg);
 }
